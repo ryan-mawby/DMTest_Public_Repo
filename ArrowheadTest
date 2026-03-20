@@ -1,0 +1,378 @@
+
+CREATE TABLE [E_1]
+( 
+	[Test1]              char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [E_2]
+( 
+	[Test1]              char(18)  NOT NULL 
+)
+go
+
+CREATE TABLE [E_3]
+( 
+	[Test1]              char(18)  NOT NULL 
+)
+go
+
+ALTER TABLE [E_1]
+	ADD CONSTRAINT [XPKE_1] PRIMARY KEY  CLUSTERED ([Test1] ASC)
+go
+
+ALTER TABLE [E_2]
+	ADD CONSTRAINT [XPKE_2] PRIMARY KEY  CLUSTERED ([Test1] ASC)
+go
+
+ALTER TABLE [E_3]
+	ADD CONSTRAINT [XPKE_3] PRIMARY KEY  CLUSTERED ([Test1] ASC)
+go
+
+
+ALTER TABLE [E_2]
+	ADD CONSTRAINT [R_1] FOREIGN KEY ([Test1]) REFERENCES [E_1]([Test1])
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+go
+
+
+ALTER TABLE [E_3]
+	ADD CONSTRAINT [R_2] FOREIGN KEY ([Test1]) REFERENCES [E_1]([Test1])
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+go
+
+
+CREATE TRIGGER tD_E_1 ON E_1 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_1 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_1  E_3 on parent delete cascade */
+    /* ERWIN_RELATION:CHECKSUM="00016648", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="Test1" */
+    DELETE E_3
+      FROM E_3,deleted
+      WHERE
+        /*  %JoinFKPK(E_3,deleted," = "," AND") */
+        E_3.Test1 = deleted.Test1
+
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on parent delete cascade */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Test1" */
+    DELETE E_2
+      FROM E_2,deleted
+      WHERE
+        /*  %JoinFKPK(E_2,deleted," = "," AND") */
+        E_2.Test1 = deleted.Test1
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_1 ON E_1 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_1 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insTest1 char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_1  E_3 on parent update cascade */
+  /* ERWIN_RELATION:CHECKSUM="00028d3e", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="Test1" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(Test1)
+  BEGIN
+    IF @numrows = 1
+    BEGIN
+      SELECT @insTest1 = inserted.Test1
+        FROM inserted
+      UPDATE E_3
+      SET
+        /*  %JoinFKPK(E_3,@ins," = ",",") */
+        E_3.Test1 = @insTest1
+      FROM E_3,inserted,deleted
+      WHERE
+        /*  %JoinFKPK(E_3,deleted," = "," AND") */
+        E_3.Test1 = deleted.Test1
+    END
+    ELSE
+    BEGIN
+      SELECT @errno = 30006,
+             @errmsg = 'Cannot cascade E_1 update because more than one row has been affected.'
+      GOTO error
+    END
+  END
+
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on parent update cascade */
+  /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Test1" */
+  IF
+    /* %ParentPK(" OR",UPDATE) */
+    UPDATE(Test1)
+  BEGIN
+    IF @numrows = 1
+    BEGIN
+      SELECT @insTest1 = inserted.Test1
+        FROM inserted
+      UPDATE E_2
+      SET
+        /*  %JoinFKPK(E_2,@ins," = ",",") */
+        E_2.Test1 = @insTest1
+      FROM E_2,inserted,deleted
+      WHERE
+        /*  %JoinFKPK(E_2,deleted," = "," AND") */
+        E_2.Test1 = deleted.Test1
+    END
+    ELSE
+    BEGIN
+      SELECT @errno = 30006,
+             @errmsg = 'Cannot cascade E_1 update because more than one row has been affected.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_E_2 ON E_2 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_2 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_1  E_2 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="00012059", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Test1" */
+    IF EXISTS (SELECT * FROM deleted,E_1
+      WHERE
+        /* %JoinFKPK(deleted,E_1," = "," AND") */
+        deleted.Test1 = E_1.Test1 AND
+        NOT EXISTS (
+          SELECT * FROM E_2
+          WHERE
+            /* %JoinFKPK(E_2,E_1," = "," AND") */
+            E_2.Test1 = E_1.Test1
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last E_2 because E_1 exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_2 ON E_2 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_2 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insTest1 char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_1  E_2 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00015b18", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_2"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_1", FK_COLUMNS="Test1" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(Test1)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,E_1
+        WHERE
+          /* %JoinFKPK(inserted,E_1) */
+          inserted.Test1 = E_1.Test1
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update E_2 because E_1 does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+
+
+CREATE TRIGGER tD_E_3 ON E_3 FOR DELETE AS
+/* erwin Builtin Trigger */
+/* DELETE trigger on E_3 */
+BEGIN
+  DECLARE  @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+    /* erwin Builtin Trigger */
+    /* E_1  E_3 on child delete no action */
+    /* ERWIN_RELATION:CHECKSUM="0001243f", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="Test1" */
+    IF EXISTS (SELECT * FROM deleted,E_1
+      WHERE
+        /* %JoinFKPK(deleted,E_1," = "," AND") */
+        deleted.Test1 = E_1.Test1 AND
+        NOT EXISTS (
+          SELECT * FROM E_3
+          WHERE
+            /* %JoinFKPK(E_3,E_1," = "," AND") */
+            E_3.Test1 = E_1.Test1
+        )
+    )
+    BEGIN
+      SELECT @errno  = 30010,
+             @errmsg = 'Cannot delete last E_3 because E_1 exists.'
+      GOTO error
+    END
+
+
+    /* erwin Builtin Trigger */
+    RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
+CREATE TRIGGER tU_E_3 ON E_3 FOR UPDATE AS
+/* erwin Builtin Trigger */
+/* UPDATE trigger on E_3 */
+BEGIN
+  DECLARE  @numrows int,
+           @nullcnt int,
+           @validcnt int,
+           @insTest1 char(18),
+           @errno   int,
+           @severity int,
+           @state    int,
+           @errmsg  varchar(255)
+
+  SELECT @numrows = @@rowcount
+  /* erwin Builtin Trigger */
+  /* E_1  E_3 on child update no action */
+  /* ERWIN_RELATION:CHECKSUM="00014a5f", PARENT_OWNER="", PARENT_TABLE="E_1"
+    CHILD_OWNER="", CHILD_TABLE="E_3"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_2", FK_COLUMNS="Test1" */
+  IF
+    /* %ChildFK(" OR",UPDATE) */
+    UPDATE(Test1)
+  BEGIN
+    SELECT @nullcnt = 0
+    SELECT @validcnt = count(*)
+      FROM inserted,E_1
+        WHERE
+          /* %JoinFKPK(inserted,E_1) */
+          inserted.Test1 = E_1.Test1
+    /* %NotnullFK(inserted," IS NULL","select @nullcnt = count(*) from inserted where"," AND") */
+    
+    IF @validcnt + @nullcnt != @numrows
+    BEGIN
+      SELECT @errno  = 30007,
+             @errmsg = 'Cannot update E_3 because E_1 does not exist.'
+      GOTO error
+    END
+  END
+
+
+  /* erwin Builtin Trigger */
+  RETURN
+error:
+   RAISERROR (@errmsg, -- Message text.
+              @severity, -- Severity (0~25).
+              @state) -- State (0~255).
+    rollback transaction
+END
+
+go
+
+
